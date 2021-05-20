@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% block breadcrumb %}
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
+            <li class="breadcrumb-item active">Register</li>
+        </ol>
+    </nav>
+{% endblock breadcrumb %}
+{% block content %}
+    <p>Please register</p>
+    <form id="register_form" method="post" action="{% url 'register' %}">
+    {% csrf_token %}
+    {{ form }}
+    </form>
+    <button form="register_form" type="submit">Register</button>
+{% endblock content %}

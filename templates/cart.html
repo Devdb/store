@@ -1,3 +1,43 @@
 {% extends 'base.html' %}
+{% block breadcrumb %}
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Cart</li>
+        </ol>
+    </nav>
+{% endblock breadcrumb %}
 {% block content %}
+    {% if not products_list %}
+        <p>Sorry, man. You cart is empty</p>
+    {% else %}
+        <form id="cart" action="{% url 'cart' %}" method="post">
+            {% csrf_token %}
+            <table class="table">
+                <thead>
+                <th class="col-1">Delete?</th>
+                <th>Name</th>
+                <th>Price</th>
+                </thead>
+                <tbody>
+                {% for product in products_list %}
+                    <tr>
+                        <td><input class="form-check-input" type="checkbox" value=""
+                                   name="product_id__{{ product.id }}"></td>
+                        <td>{{ product.name }}</td>
+                        <td>{{ product.price }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+                <tfoot>
+                <tr>
+                    <td>
+                        {{ overall_sum }}
+                    </td>
+                </tr>
+                </tfoot>
+            </table>
+        </form>
+        <button class="btn btn-outline-success" type="submit" form="cart">Save cart</button>
+    {% endif %}
 {% endblock content %}

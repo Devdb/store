@@ -1,5 +1,20 @@
 {% extends 'base.html' %}
+{% block breadcrumb %}
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item active">Home</li>
+        </ol>
+    </nav>
+{% endblock breadcrumb %}
 {% block content %}
-    <p>This is home page</p>
-    <a href="{% url 'cart' %}">Cart</a>
+    <p>In this cool market currently working is</p>
+    {% for employee in employees %}
+        <p>{{ employee.full_name }}</p>
+    {% endfor %}
+    <p>
+        <a href="{% url 'cart' %}">Cart</a>
+    </p>
+    <p>
+        <a href="{% url 'products' %}">Product</a>
+    </p>
 {% endblock content %}
