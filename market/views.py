@@ -31,6 +31,8 @@ def products_view(request):
 def cart_view(request):
     if not request.user.is_authenticated:
         return render(request, 'login_failed.html')
+    if request.is_ajax():
+        print('dsasddsa')
     if request.method == 'POST':
         cart = Cart.objects.get(client=request.user)
         for key in request.POST.keys():
