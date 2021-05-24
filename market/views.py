@@ -12,7 +12,7 @@ def home(request):
 
 def products_view(request):
     if request.method == 'POST':
-        cart, _ = Cart.objects.get_or_create(client=request.user.id)
+        cart, _ = Cart.objects.get_or_create(client=request.user)
         product_in_cart = []
         for key in request.POST.keys():
             if key.startswith('product_id__'):
@@ -32,7 +32,7 @@ def cart_view(request):
     if not request.user.is_authenticated:
         return render(request, 'login_failed.html')
     if request.method == 'POST':
-        cart = Cart.objects.get(client=request.user.id)
+        cart = Cart.objects.get(client=request.user)
         for key in request.POST.keys():
             if key.startswith('product_id__'):
                 product_id = int(key.split('product_id__')[1])
@@ -44,7 +44,7 @@ def cart_view(request):
 
     else:
         try:
-            cart = Cart.objects.get(client=request.user.id)
+            cart = Cart.objects.get(client=request.user)
             products_in_cart = cart.products.all()
             overall_sum = cart.overall_sum
         except Cart.DoesNotExist:
