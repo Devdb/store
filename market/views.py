@@ -1,5 +1,6 @@
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
+from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from market.models import Product, Cart, Employee
 from market.forms import RegisterForm, LoginForm
@@ -31,20 +32,22 @@ def products_view(request):
 def cart_view(request):
     if not request.user.is_authenticated:
         return render(request, 'login_failed.html')
-    if request.is_ajax():
-        print('dsasddsa')
-    if request.method == 'POST':
-        cart = Cart.objects.get(client=request.user)
-        for key in request.POST.keys():
-            if key.startswith('product_id__'):
-                product_id = int(key.split('product_id__')[1])
+
+    if request.is_ajax() and request.method == 'POST':
+        try:
+            product_to_delete = request.POST.getlist('deleted[]')
+            cart = Cart.objects.get(client=request.user)
+            for product_id in product_to_delete:
                 product_obj = Product.objects.get(id=product_id)
                 cart.products.remove(product_obj)
-        cart.calc_sum()
-        cart.save()
-        return redirect('cart', permanent=True)
+            cart.calc_sum()
+            cart.save()
+            overall_sum = cart.overall_sum
+            return HttpResponse(overall_sum, status=200)
+        except Exception as e:
+            return HttpResponse(e.__str__(), status=500)
 
-    else:
+    if request.method == 'GET':
         try:
             cart = Cart.objects.get(client=request.user)
             products_in_cart = cart.products.all()
@@ -54,6 +57,8 @@ def cart_view(request):
             overall_sum = 0
         context = {'products_list': products_in_cart, 'overall_sum': overall_sum}
         return render(request, 'cart.html', context=context)
+    else:
+        return HttpResponse(status=405)
 
 
 def login_view(request):

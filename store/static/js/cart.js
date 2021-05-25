@@ -11,15 +11,19 @@ function sendForm() {
             data['deleted'].push(productId);
         }
     }
-    let url = formToSend.attr('action');
-    console.log(data)
+
+    data['csrfmiddlewaretoken'] = getCookies(document.cookie)['csrftoken'];
 
     $.ajax({
-        url: url,
-        context: data,
-        method: 'get'
-    }).done(function() {
-        console.log('dsasaddsa');
+        url: formToSend.attr('action'),
+        data: data,
+        method: formToSend.attr('method'),
+    }).done(function(overall_sum) {
+        $('tr.table-danger', 'form#cart').remove();
+        $('#overall_sum').text(overall_sum);
+        $('#notification').removeClass().addClass('alert alert-primary').text('Successfully deleted').fadeIn().delay(2000).fadeOut();
+    }).fail(function(answerExc){
+        $('#notification').removeClass().addClass('alert alert-danger').text(answerExc.responseText).fadeIn().delay(10000).fadeOut();
     });
 }
 
@@ -28,6 +32,14 @@ $(document).ready(function() {
     $('#updateCartBtn').on(
         'click', function (){sendForm()}
     )
+
+    $('input[type=checkbox]', 'form#cart').on('click', function () {
+        if (this.checked) {
+            $(this.closest('tr')).addClass('table-danger');
+        } else {
+            $(this.closest('tr')).removeClass('table-danger');
+        }
+    });
 });
 
 
