@@ -1,0 +1,33 @@
+{% if not products_list %}
+        <p>Sorry, man. You cart is empty</p>
+    {% else %}
+        <form id="cart" action="{% url 'cart' %}" method="post">
+            <table class="table">
+                <thead>
+                <th class="col-1">Delete?</th>
+                <th>Name</th>
+                <th>Count</th>
+                <th>Price</th>
+                </thead>
+                <tbody>
+                {% for product_in_cart in products_list %}
+                    <tr>
+                        <td>
+                            <input class="form-check-input" type="checkbox" name="product_id__{{ product_in_cart.id }}">
+                        </td>
+                        <td>{{ product_in_cart.product.name }}</td>
+                        <td>{{ product_in_cart.count }}</td>
+                        <td>{% widthratio product_in_cart.product.price 1 product_in_cart.count %}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+                <tfoot>
+                <tr>
+                    <td id="overall_sum">
+                        {{ overall_sum }}
+                    </td>
+                </tr>
+                </tfoot>
+            </table>
+        </form>
+    {% endif %}

@@ -4,7 +4,7 @@ function deleteFromCart(){
     let trs = $('tr', formTbody)
     let data = {'deleted': []};
     for (let tr of trs) {
-        let input = $('input', tr);
+        let input = $('input[type=checkbox]', tr);
         if (input.prop("checked")) {
             let name = input.attr("name");
             let productId = Number(name.split('product_id__')[1]);
@@ -21,10 +21,9 @@ function sendForm(form, data){
         url: form.attr('action'),
         data: data,
         method: form.attr('method'),
-    }).done(function(overall_sum) {
-        $('tr.table-danger', 'form#cart').remove();
-        $('#overall_sum').text(overall_sum);
+    }).done(function(renderedForm) {
         $('#notification').removeClass().addClass('alert alert-primary').text('Successfully deleted').fadeIn().delay(2000).fadeOut();
+        $('form#cart').html(renderedForm)
     }).fail(function(answerExc){
         $('#notification').removeClass().addClass('alert alert-danger').text(answerExc.responseText).fadeIn().delay(10000).fadeOut();
     });

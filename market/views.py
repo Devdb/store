@@ -2,31 +2,39 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
-from market.models import Product, Cart, Employee
+from market.models import Product, Cart, Employee, ProductInCart
 from market.forms import RegisterForm, LoginForm
 
 
 def home(request):
-    employees = Employee.objects.all()
-    return render(request, 'home.html', context={'employees': employees})
+    if request.method == 'GET':
+        employees = Employee.objects.all()
+        return render(request, 'home.html', context={'employees': employees})
+
+    return HttpResponse(status=405)
 
 
 def products_view(request):
     if request.method == 'POST':
+        if not request.user.is_authenticated:
+            return render(request, 'login_failed.html')
         cart, _ = Cart.objects.get_or_create(client=request.user)
-        product_in_cart = []
+        products_in_cart = []
         for key in request.POST.keys():
             if key.startswith('product_id__'):
                 product_id = int(key.split('product_id__')[1])
-                product_in_cart.append(Product.objects.get(id=product_id))
-        cart.products.clear()
-        cart.products.add(*product_in_cart)
+                count = request.POST[f'count__{product_id}']
+                product_in_cart = ProductInCart.objects.create(product=Product.objects.get(id=product_id), count=count)
+                products_in_cart.append(product_in_cart)
+        cart.products.add(*products_in_cart)
         cart.calc_sum()
         cart.save()
         return redirect('cart', permanent=True)
+    if request.method == 'GET':
+        product_list = Product.objects.all()
+        return render(request, 'products.html', context={'list': product_list})
 
-    product_list = Product.objects.all()
-    return render(request, 'products.html', context={'list': product_list})
+    return HttpResponse(status=405)
 
 
 def cart_view(request):
@@ -38,12 +46,21 @@ def cart_view(request):
             product_to_delete = request.POST.getlist('deleted[]')
             cart = Cart.objects.get(client=request.user)
             for product_id in product_to_delete:
-                product_obj = Product.objects.get(id=product_id)
+                product_obj = ProductInCart.objects.get(id=product_id)
                 cart.products.remove(product_obj)
             cart.calc_sum()
             cart.save()
-            overall_sum = cart.overall_sum
-            return HttpResponse(overall_sum, status=200)
+
+            # Calculating context
+            try:
+                cart = Cart.objects.get(client=request.user)
+                products_in_cart = cart.products.all()
+                overall_sum = cart.overall_sum
+            except Cart.DoesNotExist:
+                products_in_cart = []
+                overall_sum = 0
+            context = {'products_list': products_in_cart, 'overall_sum': overall_sum}
+            return HttpResponse(render(request, 'forms/cart_form.html', context=context), status=200)
         except Exception as e:
             return HttpResponse(e.__str__(), status=500)
 
