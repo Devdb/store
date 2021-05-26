@@ -1,23 +1,26 @@
-function sendForm() {
+function deleteFromCart(){
     let formToSend = $('#cart');
     let formTbody = $('tbody', formToSend)[0];
     let trs = $('tr', formTbody)
     let data = {'deleted': []};
     for (let tr of trs) {
         let input = $('input', tr);
-        if (input.prop( "checked" )) {
+        if (input.prop("checked")) {
             let name = input.attr("name");
             let productId = Number(name.split('product_id__')[1]);
             data['deleted'].push(productId);
         }
     }
+    sendForm(formToSend, data)
+}
 
+function sendForm(form, data){
     data['csrfmiddlewaretoken'] = getCookies(document.cookie)['csrftoken'];
 
     $.ajax({
-        url: formToSend.attr('action'),
+        url: form.attr('action'),
         data: data,
-        method: formToSend.attr('method'),
+        method: form.attr('method'),
     }).done(function(overall_sum) {
         $('tr.table-danger', 'form#cart').remove();
         $('#overall_sum').text(overall_sum);
@@ -27,13 +30,12 @@ function sendForm() {
     });
 }
 
-
 $(document).ready(function() {
-    $('#updateCartBtn').on(
-        'click', function (){sendForm()}
-    )
+    $('#updateCartBtn').on('click', function(){
+        deleteFromCart()
+    })
 
-    $('input[type=checkbox]', 'form#cart').on('click', function () {
+    $('input[type=checkbox]', 'form#cart').on('click', function() {
         if (this.checked) {
             $(this.closest('tr')).addClass('table-danger');
         } else {
